@@ -1,3 +1,4 @@
+// components/ExpiredCard.jsx
 import React from "react";
 import styled from "styled-components";
 
@@ -12,7 +13,7 @@ const Card = styled.div`
 const Title = styled.h2`
   margin-top: 0;
   margin-bottom: 1rem;
-  color: #ff5555;
+  color: #ff5555; /* or choose #bd93f9 for consistency */
   text-align: center;
 `;
 
@@ -56,27 +57,31 @@ const DeleteButton = styled.button`
 `;
 
 const ExpiredCard = ({ aliasList, onDeleteAlias }) => {
-  if (!aliasList || aliasList.length === 0) return null;
-
   return (
     <Card>
       <Title>Expired Aliases</Title>
       <ScrollArea>
         <AliasList>
-          {aliasList.map(({ alias, url, expiresAt }) => (
-            <AliasItem key={alias}>
-              <strong>{alias}</strong> → {url}
-              <em>
-                Expired at:{" "}
-                {expiresAt ? new Date(expiresAt).toLocaleString() : "Unknown"}
-              </em>
-              {onDeleteAlias && (
-                <DeleteButton onClick={() => onDeleteAlias(alias)}>
-                  Delete
-                </DeleteButton>
-              )}
-            </AliasItem>
-          ))}
+          {aliasList && aliasList.length > 0 ? (
+            aliasList.map(({ alias, url, expiresAt }) => (
+              <AliasItem key={alias}>
+                <strong>{alias}</strong> → {url}
+                <em>
+                  Expired at:{" "}
+                  {expiresAt ? new Date(expiresAt).toLocaleString() : "Unknown"}
+                </em>
+                {onDeleteAlias && (
+                  <DeleteButton onClick={() => onDeleteAlias(alias)}>
+                    Delete
+                  </DeleteButton>
+                )}
+              </AliasItem>
+            ))
+          ) : (
+            <li style={{ textAlign: "center", color: "#f8f8f2" }}>
+              No expired aliases.
+            </li>
+          )}
         </AliasList>
       </ScrollArea>
     </Card>
