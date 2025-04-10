@@ -43,6 +43,41 @@ const ClearButton = styled.button`
   }
 `;
 
+/**
+ * Splits a log entry that contains an arrow ("→") into two parts.
+ * The left part is further split at the last colon (":") so that the alias (i.e. the text after the colon)
+ * is rendered in bold. The left part is colored green, and the right part (after the arrow) is colored orange.
+ */
+const formatLog = (log) => {
+  if (log.includes("→")) {
+    const parts = log.split("→");
+    const leftPart = parts[0].trim();
+    const rightPart = parts[1].trim();
+    // Look for the last occurrence of a colon to isolate the alias.
+    const colonIndex = leftPart.lastIndexOf(":");
+    if (colonIndex !== -1) {
+      const prefix = leftPart.slice(0, colonIndex + 1).trim(); // include colon
+      const aliasText = leftPart.slice(colonIndex + 1).trim();
+      return (
+        <span>
+          <span style={{ color: "green" }}>
+            {prefix} <strong>{aliasText}</strong>
+          </span>
+          <span style={{ color: "orange" }}> → {rightPart}</span>
+        </span>
+      );
+    } else {
+      return (
+        <span>
+          <span style={{ color: "green" }}>{leftPart}</span>
+          <span style={{ color: "orange" }}> → {rightPart}</span>
+        </span>
+      );
+    }
+  }
+  return log;
+};
+
 const LogViewer = ({ logs, setLogs }) => {
   if (!logs || logs.length === 0) return null;
 
@@ -53,7 +88,7 @@ const LogViewer = ({ logs, setLogs }) => {
         <ClearButton onClick={() => setLogs([])}>Clear</ClearButton>
       </Header>
       {logs.map((log, index) => (
-        <LogEntry key={index}>{log}</LogEntry>
+        <LogEntry key={index}>{formatLog(log)}</LogEntry>
       ))}
     </LogContainer>
   );

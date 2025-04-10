@@ -35,7 +35,7 @@ const Select = styled.select`
 
 const Button = styled.button`
   padding: 0.6rem 1.2rem;
-  background-color: #6272a4;
+  background-color: ${(props) => (props.delete ? "#ff5555" : "#6272a4")};
   color: #f8f8f2;
   border: none;
   border-radius: 6px;
@@ -44,8 +44,13 @@ const Button = styled.button`
   transition: background 0.3s ease;
 
   &:hover {
-    background-color: #7082bb;
+    background-color: ${(props) => (props.delete ? "#ff4444" : "#7082bb")};
   }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 1rem;
 `;
 
 const ResolvedText = styled.p`
@@ -53,8 +58,13 @@ const ResolvedText = styled.p`
   color: ${(props) => (props.isFound ? "#8be9fd" : "#ff5555")};
 `;
 
-const ResolveCard = ({ aliasList, onResolve, resolvedUrl, setResolvedUrl }) => {
-  // We'll keep track of which alias is selected
+const ResolveCard = ({
+  aliasList,
+  onResolve,
+  resolvedUrl,
+  setResolvedUrl,
+  onDeleteAlias,
+}) => {
   const [selectedAlias, setSelectedAlias] = useState("");
 
   const handleResolve = async () => {
@@ -65,17 +75,26 @@ const ResolveCard = ({ aliasList, onResolve, resolvedUrl, setResolvedUrl }) => {
     onResolve(selectedAlias);
   };
 
+  const handleDelete = async () => {
+    if (!selectedAlias) {
+      setResolvedUrl("Please select an alias to delete!");
+      return;
+    }
+    if (onDeleteAlias) {
+      onDeleteAlias(selectedAlias);
+    }
+  };
+
   return (
     <Card>
       <Title>Resolve a Short URL</Title>
-
       {aliasList.length === 0 ? (
         <p style={{ color: "#ffb86c" }}>
           No aliases found. Shorten some URLs first!
         </p>
       ) : (
         <>
-          <Label htmlFor="aliasSelect">Select an alias to resolve:</Label>
+          <Label htmlFor="aliasSelect">Select an alias:</Label>
           <Select
             id="aliasSelect"
             value={selectedAlias}
@@ -88,11 +107,16 @@ const ResolveCard = ({ aliasList, onResolve, resolvedUrl, setResolvedUrl }) => {
               </option>
             ))}
           </Select>
-
-          <Button onClick={handleResolve}>🔍 Resolve Alias</Button>
+          <ButtonContainer>
+            <Button onClick={handleResolve}>🔍 Resolve Alias</Button>
+            {onDeleteAlias && (
+              <Button delete onClick={handleDelete}>
+                🗑️ Delete Alias
+              </Button>
+            )}
+          </ButtonContainer>
         </>
       )}
-
       {resolvedUrl && (
         <ResolvedText isFound={!resolvedUrl.includes("❌")}>
           🔁 Resolved To: <strong>{resolvedUrl}</strong>

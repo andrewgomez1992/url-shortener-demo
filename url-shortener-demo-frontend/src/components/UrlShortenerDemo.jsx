@@ -135,12 +135,15 @@ const UrlShortenerDemo = () => {
         });
         setShortUrl(resultUrl);
         addLog(`Shortened locally: ${longUrl} → ${resultUrl}`);
-        refreshAliasList();
       }
 
+      // Reset fields
       setLongUrl("");
       setAlias("");
       setExpiresIn("");
+
+      // Refresh alias list after successful shorten regardless of store type.
+      await refreshAliasList();
     } catch (err) {
       alert(`❌ Error: ${err.message}`);
       addLog(`Error: ${err.message}`);
@@ -273,6 +276,7 @@ const UrlShortenerDemo = () => {
             onResolve={handleResolve}
             resolvedUrl={resolvedUrl}
             setResolvedUrl={setResolvedUrl}
+            onDeleteAlias={handleDeleteAlias}
           />
 
           {/* Expired aliases */}
