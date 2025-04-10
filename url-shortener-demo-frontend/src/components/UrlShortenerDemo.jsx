@@ -66,6 +66,8 @@ const UrlShortenerDemo = () => {
   // Logging
   const addLog = (msg) => setLogs((prev) => [msg, ...prev]);
 
+  console.log("expiredAliasList", expiredAliasList);
+
   // refreshAliasList => calls /list for redis, or local shortener
   const refreshAliasList = async () => {
     if (storeType === "redis") {
@@ -168,6 +170,25 @@ const UrlShortenerDemo = () => {
     }
   };
 
+  const handleDeleteAlias = async (aliasToDelete) => {
+    try {
+      const res = await fetch(`${API_BASE}/delete/${aliasToDelete}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        addLog(`🗑️ Deleted alias: ${aliasToDelete}`);
+        refreshAliasList(); // Refresh active + expired list
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.error || "Delete failed");
+      }
+    } catch (err) {
+      alert(`❌ Error deleting alias: ${err.message}`);
+      addLog(`Error deleting alias: ${err.message}`);
+    }
+  };
+
   // checkApi => calls /ping to see if backend is up
   const checkApi = async () => {
     try {
@@ -255,7 +276,10 @@ const UrlShortenerDemo = () => {
           />
 
           {/* Expired aliases */}
-          <ExpiredCard aliasList={expiredAliasList} />
+          <ExpiredCard
+            aliasList={expiredAliasList}
+            onDeleteAlias={handleDeleteAlias}
+          />
         </RightColumn>
       </MainContent>
 

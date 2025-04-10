@@ -1,4 +1,3 @@
-// components/ExpiredCard.jsx
 import React from "react";
 import styled from "styled-components";
 
@@ -13,13 +12,12 @@ const Card = styled.div`
 const Title = styled.h2`
   margin-top: 0;
   margin-bottom: 1rem;
-  color: #ff5555; /* or #bd93f9 for consistency */
+  color: #ff5555;
   text-align: center;
 `;
 
-/* Scrollable container */
 const ScrollArea = styled.div`
-  max-height: 200px; /* Adjust as desired */
+  max-height: 200px;
   overflow-y: auto;
 `;
 
@@ -37,27 +35,46 @@ const AliasItem = styled.li`
   border: 1px dashed #ff5555;
   color: #f8f8f2;
   font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
 `;
 
-const ExpiredCard = ({ aliasList }) => {
-  if (!aliasList || aliasList.length === 0) {
-    return null;
+const DeleteButton = styled.button`
+  margin-top: 0.5rem;
+  background: #ff5555;
+  color: #f8f8f2;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: flex-start;
+
+  &:hover {
+    background: #ff4444;
   }
+`;
+
+const ExpiredCard = ({ aliasList, onDeleteAlias }) => {
+  if (!aliasList || aliasList.length === 0) return null;
 
   return (
     <Card>
       <Title>Expired Aliases</Title>
-      {/* The scrollable area container */}
       <ScrollArea>
         <AliasList>
           {aliasList.map(({ alias, url, expiresAt }) => (
             <AliasItem key={alias}>
               <strong>{alias}</strong> → {url}
-              <br />
               <em>
                 Expired at:{" "}
                 {expiresAt ? new Date(expiresAt).toLocaleString() : "Unknown"}
               </em>
+              {onDeleteAlias && (
+                <DeleteButton onClick={() => onDeleteAlias(alias)}>
+                  Delete
+                </DeleteButton>
+              )}
             </AliasItem>
           ))}
         </AliasList>
