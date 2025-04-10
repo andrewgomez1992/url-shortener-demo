@@ -7,6 +7,7 @@ import { URLShortener } from "@the-node-forge/url-shortener";
 import shortenRouter from "./routes/shorten.js";
 import resolveRouter from "./routes/resolve.js";
 import alistRouter from "./routes/alist.js";
+import deleteAlias from "./routes/deleteAlias.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 import dotenv from "dotenv";
@@ -43,6 +44,7 @@ const shortener = new URLShortener(
 app.use("/shorten", shortenRouter(shortener));
 app.use("/resolve", resolveRouter(shortener));
 app.use("/list", alistRouter(shortener));
+app.use("/delete", deleteAlias(shortener));
 
 app.get("/", (req, res) => {
   res.send("✅ Redis URL Shortener API is running");
