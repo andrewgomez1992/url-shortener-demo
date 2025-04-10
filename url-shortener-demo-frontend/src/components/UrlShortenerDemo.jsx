@@ -14,7 +14,7 @@ import ResolveCard from "./ResolveCard";
 import ConnectionStatus from "./ConnectionStatus";
 import LogViewer from "./LogViewer";
 import StoreSelector from "./StoreSelector";
-import ExpiredCard from "./ExpiredCard";
+import AliasListCard from "./AliasListCard";
 
 import { InMemoryStore } from "@the-node-forge/url-shortener/stores/inMemoryStore.js";
 import { FileStore } from "@the-node-forge/url-shortener/stores/fileStore.js";
@@ -67,6 +67,7 @@ const UrlShortenerDemo = () => {
   const addLog = (msg) => setLogs((prev) => [msg, ...prev]);
 
   console.log("expiredAliasList", expiredAliasList);
+  console.log("alias", alias);
 
   // refreshAliasList => calls /list for redis, or local shortener
   const refreshAliasList = async () => {
@@ -76,12 +77,12 @@ const UrlShortenerDemo = () => {
         if (!res.ok) throw new Error(`Failed to fetch from /list`);
         const data = await res.json();
         console.log("data", data);
-        // data => { active: {...}, expired: {...} }
-
+        // Map active and expired aliases from Redis, tagging with storeType:
         const activeArr = Object.entries(data.active).map(([alias, entry]) => ({
           alias,
           url: entry.url,
           expiresAt: entry.expiresAt,
+          storeType: "redis",
         }));
 
         const expiredArr = Object.entries(data.expired).map(
@@ -89,26 +90,29 @@ const UrlShortenerDemo = () => {
             alias,
             url: entry.url,
             expiresAt: entry.expiresAt,
+            storeType: "redis",
           })
         );
 
-        setAliasList(activeArr);
-        setExpiredAliasList(expiredArr);
+        // Combine active and expired into one list so the card can display both.
+        setAliasList([...activeArr, ...expiredArr]);
+        setExpiredAliasList(expiredArr); // Optional, if you wish to track expired separately
       } catch (err) {
         console.error("Error fetching from redis /list:", err);
       }
       return;
     }
 
-    // local memory or file
+    // For local memory or file, which returns all entries in one list
     const all = await localShortener.store.list();
     const arr = Object.entries(all).map(([alias, entry]) => ({
       alias,
       url: entry.url,
       expiresAt: entry.expiresAt,
+      storeType: storeType, // "inMemory" or "file"
     }));
     setAliasList(arr);
-    setExpiredAliasList([]);
+    setExpiredAliasList([]); // Not used in this branch (or you can compute expiration manually)
   };
 
   // Shorten
@@ -128,6 +132,7 @@ const UrlShortenerDemo = () => {
           throw new Error(data.error || "Unknown error");
         }
       } else {
+        console.log("Override value in handleShorten:", override);
         const resultUrl = await localShortener.shorten(longUrl, {
           alias: alias || undefined,
           expiresIn: expiresIn || undefined,
@@ -208,7 +213,7 @@ const UrlShortenerDemo = () => {
       checkApi();
       refreshAliasList();
     } else {
-      setIsConnected(false);
+      setIsConnected(true);
       refreshAliasList();
     }
   }, [storeType]);
@@ -259,7 +264,10 @@ const UrlShortenerDemo = () => {
           <Card>
             <Title>Storage & Connection</Title>
             <StoreSelector storeType={storeType} setStoreType={setStoreType} />
-            <ConnectionStatus online={isConnected} />
+            <ConnectionStatus
+              activeStore={storeType}
+              isConnected={isConnected}
+            />
           </Card>
         </LeftColumn>
 
@@ -280,9 +288,11 @@ const UrlShortenerDemo = () => {
           />
 
           {/* Expired aliases */}
-          <ExpiredCard
-            aliasList={expiredAliasList}
+          <AliasListCard
+            title="Current Aliases"
+            aliasList={aliasList}
             onDeleteAlias={handleDeleteAlias}
+            baseDomain="https://sho.rt"
           />
         </RightColumn>
       </MainContent>

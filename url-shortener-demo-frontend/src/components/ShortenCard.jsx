@@ -6,7 +6,6 @@ const Card = styled.div`
   border: 1px solid #44475a;
   border-radius: 8px;
   padding: 1rem;
-  margin-bottom: 1.5rem;
 `;
 
 const Title = styled.h3`
@@ -73,6 +72,7 @@ const ShortenCard = ({
   onShorten,
   shortUrl,
 }) => {
+  console.log("Force override checkbox value:", override);
   return (
     <Card>
       <Title>Shorten a URL</Title>
