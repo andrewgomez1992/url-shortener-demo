@@ -4,7 +4,6 @@ This project is a full-stack demo of the `@the-node-forge/url-shortener` npm pac
 
 - A frontend UI for shortening and resolving URLs
 - A backend Express API powered by Redis (via Upstash)
-- Support for multiple storage types (Redis, InMemory, File)
 
 ---
 
@@ -102,9 +101,8 @@ npm run dev
 
 - Custom aliases
 - Optional expiration (`1h`, `1d`, etc.)
-- Toggle between Redis, InMemory, and File store
 - View all aliases (active and expired)
-- Resolve and delete URLs
+- Resolve and delete URLs in real time
 
 ---
 
@@ -116,12 +114,7 @@ npm run dev
 
 ## 🛄 Clean Up
 
-To reset local stores:
-
-- File store: delete the `url-store.json` file
-- InMemory store: reload the app
-
-Redis entries will expire based on TTL or can be manually deleted.
+Redis entries will expire automatically based on their TTL. You can also delete them manually from the frontend UI.
 
 ---
 
@@ -131,4 +124,4 @@ Feel free to open an issue or submit a PR — all contributions welcome!
 
 ---
 
-Made with 💻 by The Node Forge - Andrew Gomez
+Made with 💻 by The Node Forge — Andrew Gomez
