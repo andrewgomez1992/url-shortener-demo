@@ -112,7 +112,7 @@ const AliasListCard = ({ title, aliasList, onDeleteAlias, baseDomain }) => {
                     </em>
                   </InfoRow>
                   <InfoRow>
-                    <StatusTag expired={isExpired}>
+                    <StatusTag $expired={isExpired}>
                       {isExpired ? "Expired" : "Active"}
                     </StatusTag>
                   </InfoRow>

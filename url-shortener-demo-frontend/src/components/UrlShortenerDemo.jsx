@@ -11,10 +11,9 @@ import {
 
 import ShortenCard from "./ShortenCard";
 import ResolveCard from "./ResolveCard";
-import ConnectionStatus from "./ConnectionStatus";
 import LogViewer from "./LogViewer";
-import StoreSelector from "./StoreSelector";
 import AliasListCard from "./AliasListCard";
+import ConnectionStatus from "./ConnectionStatus";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -49,7 +48,6 @@ const UrlShortenerDemo = () => {
   const [aliasList, setAliasList] = useState([]);
   const [expiredAliasList, setExpiredAliasList] = useState([]);
   const [logs, setLogs] = useState([]);
-  const [storeType, setStoreType] = useState("redis");
   const [isConnected, setIsConnected] = useState(false);
 
   const addLog = (msg) => setLogs((prev) => [msg, ...prev]);
@@ -64,14 +62,12 @@ const UrlShortenerDemo = () => {
         alias,
         url: entry.url,
         expiresAt: entry.expiresAt,
-        storeType: "redis",
       }));
 
       const expiredArr = Object.entries(data.expired).map(([alias, entry]) => ({
         alias,
         url: entry.url,
         expiresAt: entry.expiresAt,
-        storeType: "redis",
       }));
 
       setAliasList(activeArr);
@@ -91,7 +87,7 @@ const UrlShortenerDemo = () => {
       const data = await res.json();
       if (res.ok) {
         setShortUrl(data.shortUrl);
-        addLog(`Shortened via Redis: ${longUrl} → ${data.shortUrl}`);
+        addLog(`Shortened: ${longUrl} → ${data.shortUrl}`);
       } else {
         throw new Error(data.error || "Unknown error");
       }
@@ -113,7 +109,7 @@ const UrlShortenerDemo = () => {
       const data = await res.json();
       if (res.ok) {
         setResolvedUrl(data.resolvedUrl || "❌ Not found or expired");
-        addLog(`Resolved via Redis: ${chosenAlias} → ${data.resolvedUrl}`);
+        addLog(`Resolved: ${chosenAlias} → ${data.resolvedUrl}`);
       } else {
         throw new Error(data.error || "Unknown error");
       }
@@ -154,7 +150,7 @@ const UrlShortenerDemo = () => {
   useEffect(() => {
     checkApi();
     refreshAliasList();
-  }, [storeType]);
+  }, []);
 
   const handleSampleClick = (url) => {
     setLongUrl(url);
@@ -201,11 +197,7 @@ const UrlShortenerDemo = () => {
           />
           <Card>
             <Title>Storage & Connection</Title>
-            <StoreSelector storeType={storeType} setStoreType={setStoreType} />
-            <ConnectionStatus
-              activeStore={storeType}
-              isConnected={isConnected}
-            />
+            <ConnectionStatus isConnected={isConnected} />
           </Card>
         </LeftColumn>
 

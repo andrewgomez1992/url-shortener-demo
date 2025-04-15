@@ -110,7 +110,7 @@ const ResolveCard = ({
           <ButtonContainer>
             <Button onClick={handleResolve}>🔍 Resolve Alias</Button>
             {onDeleteAlias && (
-              <Button delete onClick={handleDelete}>
+              <Button $delete onClick={handleDelete}>
                 🗑️ Delete Alias
               </Button>
             )}

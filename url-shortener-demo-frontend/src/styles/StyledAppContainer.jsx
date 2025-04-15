@@ -1,4 +1,3 @@
-// src/styles/StyledAppContainer.jsx
 import styled from "styled-components";
 
 export const PageContainer = styled.div`
@@ -48,7 +47,6 @@ export const Footer = styled.footer`
 export const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2rem;
   width: 100%;
 `;
 

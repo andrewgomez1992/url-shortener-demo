@@ -7,7 +7,7 @@ body,
   padding: 0;
   min-height: 100vh;
   font-family: "JetBrains Mono", monospace;
-  background-color: #14151a !important; /* Global background for entire app */
+  background-color: #14151a !important;
   color: #f8f8f2;
 }
 
