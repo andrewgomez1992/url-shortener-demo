@@ -8,10 +8,14 @@ export const PageContainer = styled.div`
 `;
 
 export const Header = styled.header`
-  padding: 2rem 0;
+  padding-top: 1rem;
   text-align: center;
   color: #f8f8f2;
   font-family: "JetBrains Mono", monospace;
+
+  transform: scale(0.9);
+  transform-origin: top center;
+
   h1 {
     margin: 0;
     font-size: 2rem;
@@ -22,13 +26,14 @@ export const Header = styled.header`
 export const MainContent = styled.main`
   display: grid;
   /* max of 2 columns, each up to 500px wide */
-  grid-template-columns: minmax(0, 500px) minmax(0, 500px);
+  grid-template-columns: minmax(0, 600px) minmax(0, 600px);
   gap: 2rem;
-  padding: 2rem;
   flex: 1;
   margin: 0 auto;
   justify-content: center;
   justify-items: center;
+  transform: scale(0.9);
+  transform-origin: top center;
 
   /* MEDIA QUERY: single-column on smaller screens */
   @media (max-width: 668px) {

@@ -71,7 +71,6 @@ const ShortenCard = ({
   override,
   setOverride,
   onShorten,
-  shortUrl,
 }) => {
   console.log("Force override checkbox value:", override);
   return (
@@ -117,12 +116,6 @@ const ShortenCard = ({
       </CheckboxLabel>
 
       <Button onClick={onShorten}>✂️ Shorten URL</Button>
-
-      {shortUrl && (
-        <p style={{ marginTop: "1rem", color: "#8be9fd" }}>
-          🔗 Short URL: <strong>{shortUrl}</strong>
-        </p>
-      )}
     </Card>
   );
 };

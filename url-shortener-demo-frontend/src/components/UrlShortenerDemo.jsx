@@ -31,18 +31,17 @@ const Title = styled.h2`
   text-align: center;
 `;
 
-const sampleUrls = [
-  "https://www.example.com/very/long/url?param=something",
-  "https://some-really-long-domain.com/product/category/deals/and-more-things",
-  "https://another-super-long-url.com/demos/test?param=abc&stuff=xyz",
-];
+const MarginTop = styled.div`
+  margin-top: 1.5rem;
+`;
+
+const sampleUrls = ["https://www.example.com/very/long/url?param=something"];
 
 const UrlShortenerDemo = () => {
   const [longUrl, setLongUrl] = useState("");
   const [alias, setAlias] = useState("");
   const [expiresIn, setExpiresIn] = useState("");
   const [override, setOverride] = useState(false);
-  const [shortUrl, setShortUrl] = useState("");
 
   const [resolvedUrl, setResolvedUrl] = useState("");
   const [aliasList, setAliasList] = useState([]);
@@ -86,7 +85,6 @@ const UrlShortenerDemo = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        setShortUrl(data.shortUrl);
         addLog(`Shortened: ${longUrl} → ${data.shortUrl}`);
       } else {
         throw new Error(data.error || "Unknown error");
@@ -160,10 +158,10 @@ const UrlShortenerDemo = () => {
     <PageContainer>
       <Header>
         <h1>🧪 URL Shortener Playground</h1>
-        <h2 style={{ color: "#bd93f9", marginTop: "1rem", fontSize: "1.2rem" }}>
+        <h2 style={{ color: "#bd93f9", fontSize: "1.2rem" }}>
           Sample Long URLs (Click to insert):
         </h2>
-        <div style={{ marginTop: "0.5rem" }}>
+        <div>
           {sampleUrls.map((link) => (
             <p
               key={link}
@@ -171,7 +169,6 @@ const UrlShortenerDemo = () => {
                 cursor: "pointer",
                 color: "#8be9fd",
                 margin: 0,
-                marginBottom: "0.5rem",
               }}
               onClick={() => handleSampleClick(link)}
             >
@@ -193,20 +190,20 @@ const UrlShortenerDemo = () => {
             override={override}
             setOverride={setOverride}
             onShorten={handleShorten}
-            shortUrl={shortUrl}
           />
           <Card>
             <Title>Storage & Connection</Title>
             <ConnectionStatus isConnected={isConnected} />
           </Card>
+          <MarginTop>
+            <Card>
+              <Title>Logs</Title>
+              <LogViewer logs={logs} setLogs={setLogs} />
+            </Card>
+          </MarginTop>
         </LeftColumn>
 
         <RightColumn>
-          <Card>
-            <Title>Logs</Title>
-            <LogViewer logs={logs} setLogs={setLogs} />
-          </Card>
-
           <ResolveCard
             aliasList={aliasList}
             onResolve={handleResolve}
