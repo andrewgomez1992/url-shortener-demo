@@ -16,10 +16,6 @@ import LogViewer from "./LogViewer";
 import StoreSelector from "./StoreSelector";
 import AliasListCard from "./AliasListCard";
 
-import { InMemoryStore } from "@the-node-forge/url-shortener/stores/inMemoryStore.js";
-import { FileStore } from "@the-node-forge/url-shortener/stores/fileStore.js";
-import { URLShortener } from "@the-node-forge/url-shortener";
-
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 const Card = styled.div`
@@ -56,98 +52,54 @@ const UrlShortenerDemo = () => {
   const [storeType, setStoreType] = useState("redis");
   const [isConnected, setIsConnected] = useState(false);
 
-  // local shortener for memory/file
-  const getLocalStore = () => {
-    if (storeType === "file") return new FileStore("url-store.json");
-    return new InMemoryStore();
-  };
-  const localShortener = new URLShortener("https://sho.rt", getLocalStore());
-
-  // Logging
   const addLog = (msg) => setLogs((prev) => [msg, ...prev]);
 
-  console.log("expiredAliasList", expiredAliasList);
-  console.log("alias", alias);
-
-  // refreshAliasList => calls /list for redis, or local shortener
   const refreshAliasList = async () => {
-    if (storeType === "redis") {
-      try {
-        const res = await fetch(`${API_BASE}/list`);
-        if (!res.ok) throw new Error(`Failed to fetch from /list`);
-        const data = await res.json();
-        console.log("data", data);
-        // Map active and expired aliases from Redis, tagging with storeType:
-        const activeArr = Object.entries(data.active).map(([alias, entry]) => ({
-          alias,
-          url: entry.url,
-          expiresAt: entry.expiresAt,
-          storeType: "redis",
-        }));
+    try {
+      const res = await fetch(`${API_BASE}/list`);
+      if (!res.ok) throw new Error(`Failed to fetch from /list`);
+      const data = await res.json();
 
-        const expiredArr = Object.entries(data.expired).map(
-          ([alias, entry]) => ({
-            alias,
-            url: entry.url,
-            expiresAt: entry.expiresAt,
-            storeType: "redis",
-          })
-        );
+      const activeArr = Object.entries(data.active).map(([alias, entry]) => ({
+        alias,
+        url: entry.url,
+        expiresAt: entry.expiresAt,
+        storeType: "redis",
+      }));
 
-        // Combine active and expired into one list so the card can display both.
-        setAliasList([...activeArr, ...expiredArr]);
-        setExpiredAliasList(expiredArr); // Optional, if you wish to track expired separately
-      } catch (err) {
-        console.error("Error fetching from redis /list:", err);
-      }
-      return;
+      const expiredArr = Object.entries(data.expired).map(([alias, entry]) => ({
+        alias,
+        url: entry.url,
+        expiresAt: entry.expiresAt,
+        storeType: "redis",
+      }));
+
+      setAliasList(activeArr);
+      setExpiredAliasList(expiredArr);
+    } catch (err) {
+      console.error("Error fetching from redis /list:", err);
     }
-
-    // For local memory or file, which returns all entries in one list
-    const all = await localShortener.store.list();
-    const arr = Object.entries(all).map(([alias, entry]) => ({
-      alias,
-      url: entry.url,
-      expiresAt: entry.expiresAt,
-      storeType: storeType, // "inMemory" or "file"
-    }));
-    setAliasList(arr);
-    setExpiredAliasList([]); // Not used in this branch (or you can compute expiration manually)
   };
 
-  // Shorten
   const handleShorten = async () => {
     try {
-      if (storeType === "redis") {
-        const res = await fetch(`${API_BASE}/shorten`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: longUrl, alias, expiresIn, override }),
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setShortUrl(data.shortUrl);
-          addLog(`Shortened via Redis: ${longUrl} → ${data.shortUrl}`);
-        } else {
-          throw new Error(data.error || "Unknown error");
-        }
+      const res = await fetch(`${API_BASE}/shorten`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: longUrl, alias, expiresIn, override }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setShortUrl(data.shortUrl);
+        addLog(`Shortened via Redis: ${longUrl} → ${data.shortUrl}`);
       } else {
-        console.log("Override value in handleShorten:", override);
-        const resultUrl = await localShortener.shorten(longUrl, {
-          alias: alias || undefined,
-          expiresIn: expiresIn || undefined,
-          override,
-        });
-        setShortUrl(resultUrl);
-        addLog(`Shortened locally: ${longUrl} → ${resultUrl}`);
+        throw new Error(data.error || "Unknown error");
       }
 
-      // Reset fields
       setLongUrl("");
       setAlias("");
       setExpiresIn("");
 
-      // Refresh alias list after successful shorten regardless of store type.
       await refreshAliasList();
     } catch (err) {
       alert(`❌ Error: ${err.message}`);
@@ -155,22 +107,15 @@ const UrlShortenerDemo = () => {
     }
   };
 
-  // Resolve
   const handleResolve = async (chosenAlias) => {
     try {
-      if (storeType === "redis") {
-        const res = await fetch(`${API_BASE}/resolve/${chosenAlias}`);
-        const data = await res.json();
-        if (res.ok) {
-          setResolvedUrl(data.resolvedUrl || "❌ Not found or expired");
-          addLog(`Resolved via Redis: ${chosenAlias} → ${data.resolvedUrl}`);
-        } else {
-          throw new Error(data.error || "Unknown error");
-        }
+      const res = await fetch(`${API_BASE}/resolve/${chosenAlias}`);
+      const data = await res.json();
+      if (res.ok) {
+        setResolvedUrl(data.resolvedUrl || "❌ Not found or expired");
+        addLog(`Resolved via Redis: ${chosenAlias} → ${data.resolvedUrl}`);
       } else {
-        const result = await localShortener.resolve(chosenAlias);
-        setResolvedUrl(result || "❌ Not found or expired");
-        addLog(`Resolved locally: ${chosenAlias} → ${result}`);
+        throw new Error(data.error || "Unknown error");
       }
     } catch (err) {
       alert(`❌ Error resolving: ${err.message}`);
@@ -186,7 +131,7 @@ const UrlShortenerDemo = () => {
 
       if (res.ok) {
         addLog(`🗑️ Deleted alias: ${aliasToDelete}`);
-        refreshAliasList(); // Refresh active + expired list
+        refreshAliasList();
       } else {
         const errData = await res.json();
         throw new Error(errData.error || "Delete failed");
@@ -197,7 +142,6 @@ const UrlShortenerDemo = () => {
     }
   };
 
-  // checkApi => calls /ping to see if backend is up
   const checkApi = async () => {
     try {
       const res = await fetch(`${API_BASE}/ping`);
@@ -207,15 +151,9 @@ const UrlShortenerDemo = () => {
     }
   };
 
-  // Switch store => redis => run checkApi + load
   useEffect(() => {
-    if (storeType === "redis") {
-      checkApi();
-      refreshAliasList();
-    } else {
-      setIsConnected(true);
-      refreshAliasList();
-    }
+    checkApi();
+    refreshAliasList();
   }, [storeType]);
 
   const handleSampleClick = (url) => {
@@ -272,13 +210,11 @@ const UrlShortenerDemo = () => {
         </LeftColumn>
 
         <RightColumn>
-          {/* Logs */}
           <Card>
             <Title>Logs</Title>
             <LogViewer logs={logs} setLogs={setLogs} />
           </Card>
 
-          {/* Active aliases dropdown in ResolveCard */}
           <ResolveCard
             aliasList={aliasList}
             onResolve={handleResolve}
@@ -287,10 +223,16 @@ const UrlShortenerDemo = () => {
             onDeleteAlias={handleDeleteAlias}
           />
 
-          {/* Expired aliases */}
           <AliasListCard
-            title="Current Aliases"
+            title="Active Aliases"
             aliasList={aliasList}
+            onDeleteAlias={handleDeleteAlias}
+            baseDomain="https://sho.rt"
+          />
+
+          <AliasListCard
+            title="Expired Aliases"
+            aliasList={expiredAliasList}
             onDeleteAlias={handleDeleteAlias}
             baseDomain="https://sho.rt"
           />
