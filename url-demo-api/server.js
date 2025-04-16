@@ -1,17 +1,15 @@
-import express from "express";
-import cors from "cors";
-import morgan from "morgan";
-import { createClient } from "redis";
-import { RedisStore } from "@the-node-forge/url-shortener/stores/redisStore.js";
-import { URLShortener } from "@the-node-forge/url-shortener";
-import shortenRouter from "./routes/shorten.js";
-import resolveRouter from "./routes/resolve.js";
-import alistRouter from "./routes/alist.js";
-import deleteAlias from "./routes/deleteAlias.js";
-import { errorHandler } from "./middleware/errorHandler.js";
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const { createClient } = require("redis");
+const { RedisStore, URLShortener } = require("@the-node-forge/url-shortener");
+const shortenRouter = require("./routes/shorten");
+const resolveRouter = require("./routes/resolve");
+const alistRouter = require("./routes/alist");
+const deleteAlias = require("./routes/deleteAlias");
+const { errorHandler } = require("./middleware/errorHandler");
 
-import dotenv from "dotenv";
-dotenv.config();
+require("dotenv").config();
 
 const app = express();
 
@@ -32,30 +30,29 @@ const redisClient = createClient({
 });
 
 redisClient.on("error", (err) => console.error("❌ Redis Client Error:", err));
-await redisClient.connect();
 
-// ✅ Setup URLShortener with RedisStore
-const shortener = new URLShortener(
-  "https://sho.rt",
-  new RedisStore(redisClient)
-);
+redisClient.connect().then(() => {
+  // ✅ Setup URLShortener with RedisStore
+  const shortener = new URLShortener(
+    "https://sho.rt",
+    new RedisStore(redisClient)
+  );
 
-// ✅ Routes
-app.use("/shorten", shortenRouter(shortener));
-app.use("/resolve", resolveRouter(shortener));
-app.use("/list", alistRouter(shortener));
-app.use("/delete", deleteAlias(shortener));
+  // ✅ Routes
+  app.use("/shorten", shortenRouter(shortener));
+  app.use("/resolve", resolveRouter(shortener));
+  app.use("/list", alistRouter(shortener));
+  app.use("/delete", deleteAlias(shortener));
 
-app.get("/", (req, res) => {
-  res.send("✅ Redis URL Shortener API is running");
+  app.get("/", (req, res) => {
+    res.send("✅ Redis URL Shortener API is running");
+  });
+
+  app.get("/ping", (req, res) => {
+    res.status(200).json({ ok: true, message: "Redis is connected!" });
+  });
+
+  app.listen(3001, () =>
+    console.log("🚀 Server running at http://localhost:3001")
+  );
 });
-
-// ✅ The missing route:
-app.get("/ping", (req, res) => {
-  // If we got this far, Redis is connected
-  res.status(200).json({ ok: true, message: "Redis is connected!" });
-});
-
-app.listen(3001, () =>
-  console.log("🚀 Server running at http://localhost:3001")
-);

@@ -1,7 +1,6 @@
-// routes/resolve.js
-import express from "express";
+const express = require("express");
 
-export default function resolveRouter(shortener) {
+const resolveRouter = (shortener) => {
   const router = express.Router();
 
   /**
@@ -25,4 +24,6 @@ export default function resolveRouter(shortener) {
   });
 
   return router;
-}
+};
+
+module.exports = resolveRouter;

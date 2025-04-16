@@ -1,6 +1,6 @@
-import express from "express";
+const express = require("express");
 
-export default function shortenRouter(shortener) {
+const shortenRouter = (shortener) => {
   const router = express.Router();
 
   /**
@@ -9,7 +9,7 @@ export default function shortenRouter(shortener) {
    * Response: { shortUrl: string }
    */
   router.post("/", async (req, res) => {
-    const { url, alias, expiresIn, override } = req.body; // Extract override from body
+    const { url, alias, expiresIn, override } = req.body;
 
     if (!url || typeof url !== "string") {
       return res.status(400).json({ error: 'Missing or invalid "url" field.' });
@@ -28,4 +28,6 @@ export default function shortenRouter(shortener) {
   });
 
   return router;
-}
+};
+
+module.exports = shortenRouter;

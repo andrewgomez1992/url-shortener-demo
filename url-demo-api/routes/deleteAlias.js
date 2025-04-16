@@ -1,6 +1,6 @@
-import express from "express";
+const express = require("express");
 
-export default function deleteRouter(shortener) {
+const deleteRouter = (shortener) => {
   const router = express.Router();
 
   router.delete("/:alias", async (req, res) => {
@@ -8,13 +8,11 @@ export default function deleteRouter(shortener) {
     console.log("Deleting alias:", alias);
 
     try {
-      // Check if the alias exists first
       const item = await shortener.store.get(alias);
       if (!item) {
         return res.status(404).json({ error: "Alias not found" });
       }
 
-      // If exists, delete it
       await shortener.store.delete(alias);
       res.status(200).json({ success: true });
     } catch (err) {
@@ -23,4 +21,6 @@ export default function deleteRouter(shortener) {
   });
 
   return router;
-}
+};
+
+module.exports = deleteRouter;
